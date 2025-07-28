@@ -1,0 +1,42 @@
+generator client {
+    provider = "prisma-client-js"
+    output   = "../src/generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id        Int      @id @default(autoincrement())
+    email     String   @unique
+    password  String
+    firstName String   @map("first_name")
+    lastName  String   @map("last_name")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    expenses Expense[]
+
+    @@map("users")
+}
+
+model Expense {
+    id          Int      @id @default(autoincrement())
+    userId      Int      @map("user_id")
+    title       String
+    description String?
+    amount      Decimal  @db.Decimal(10, 2)
+    category    String
+    expenseDate DateTime @map("expense_date") @db.Date
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([expenseDate])
+    @@index([category])
+    @@map("expenses")
+}
